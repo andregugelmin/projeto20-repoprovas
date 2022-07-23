@@ -71,7 +71,7 @@ describe('Test tests suite', () => {
         const token = response.body.token;
 
         const test = testFactory.createTest();
-
+        console.log(token);
         response = await supertest(app)
             .post('/test')
             .send(test)
@@ -125,7 +125,7 @@ describe('Test tests suite', () => {
 
         response = await supertest(app)
             .post('/test')
-            .send({ ...test, url: 'notaurl' })
+            .send({ ...test, pdfUrl: 'notaurl' })
             .set('Authorization', `Bearer ${token}`);
         expect(response.status).toBe(422);
     });
