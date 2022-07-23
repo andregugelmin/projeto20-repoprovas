@@ -20,15 +20,17 @@ model User {
 }
 
 model Test {
-  id                  Int      @id @default(autoincrement())
-  name                String
-  url                 String
-  categoryId          Int
-  teacherDisciplineId Int
-  createdAt           DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  name         String
+  url          String
+  categoryId   Int
+  disciplineId Int
+  teacherId    Int
+  createdAt    DateTime @default(now())
 
-  teacherDiscipline TeacherDiscipline @relation(fields: [teacherDisciplineId], references: [id])
-  category          Category          @relation(fields: [categoryId], references: [id])
+  category   Category   @relation(fields: [categoryId], references: [id])
+  discipline Discipline @relation(fields: [disciplineId], references: [id])
+  teacher    Teacher    @relation(fields: [teacherId], references: [id])
 
   @@map("tests")
 }
@@ -49,7 +51,7 @@ model Discipline {
   term      Int
   createdAt DateTime @default(now())
 
-  TeacherDiscipline TeacherDiscipline[]
+  Test Test[]
 
   @@map("disciplines")
 }
@@ -59,20 +61,7 @@ model Teacher {
   name      String   @unique
   createdAt DateTime @default(now())
 
-  TeacherDiscipline TeacherDiscipline[]
+  Test Test[]
 
   @@map("teachers")
-}
-
-model TeacherDiscipline {
-  id           Int      @id @default(autoincrement())
-  createdAt    DateTime @default(now())
-  teacherId    Int
-  disciplineId Int
-
-  teacher    Teacher    @relation(fields: [teacherId], references: [id])
-  discipline Discipline @relation(fields: [disciplineId], references: [id])
-  Test       Test[]
-
-  @@map("teacher_disciplines")
 }

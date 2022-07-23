@@ -9,6 +9,7 @@ export default function errorHandler(
 ) {
     if (isAppError(error)) {
         const statusCode = errorTypeToStatusCode(error.type);
+        console.log(error.message);
         return res.status(statusCode).send(error.message);
     }
 

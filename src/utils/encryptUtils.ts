@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { unauthorizedError } from './errorUtils';
+import { unauthorizedError } from './errorUtils.js';
 
 export function encryptPassword(password: string) {
     const SALT = 10;

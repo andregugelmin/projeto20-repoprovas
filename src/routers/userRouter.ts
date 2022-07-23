@@ -7,11 +7,11 @@ import { userSchema } from '../schemas/userSchema.js';
 const userRouter = Router();
 
 userRouter.post(
-    '/signup',
+    '/sign-up',
     validateSchema(userSchema),
     checkEmailIsRegistered,
     singup
 );
-userRouter.post('/signin', login);
+userRouter.post('/sign-in', login);
 
 export default userRouter;
