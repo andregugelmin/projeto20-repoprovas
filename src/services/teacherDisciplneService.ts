@@ -13,7 +13,6 @@ async function getTeacherDisciplineService(
     if (!teacherDiscipline)
         throw notFoundError('Teacher and Discipline not correlated');
 
-    console.log(teacherDiscipline);
     return teacherDiscipline;
 }
 

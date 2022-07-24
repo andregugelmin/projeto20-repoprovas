@@ -4,7 +4,6 @@ import categoryService from '../services/categoryService.js';
 import disciplineService from '../services/disciplineService.js';
 import teacherService from '../services/teacherService.js';
 
-import { notFoundError } from '../utils/errorUtils.js';
 import teacherDisciplineService from './teacherDisciplneService.js';
 
 async function createTest(
@@ -102,6 +101,12 @@ function separateTestsByCategory(discipline) {
     return { name: discipline.name, categories: categoriesArr };
 }
 
-const testService = { createTest, getTestByTerms };
+export async function getTestByTeachers() {
+    const result = await testRepository.findByTeachers();
+
+    return result;
+}
+
+const testService = { createTest, getTestByTerms, getTestByTeachers };
 
 export default testService;

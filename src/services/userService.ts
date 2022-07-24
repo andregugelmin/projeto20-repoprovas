@@ -20,7 +20,10 @@ async function findUserByEmail(email: string) {
 async function createUser(user: CreateUserData) {
     const passwordEncrypted = encryptPassword(user.password);
 
-    await userRepository.insert({ ...user, password: passwordEncrypted });
+    await userRepository.insert({
+        email: user.email,
+        password: passwordEncrypted,
+    });
 }
 
 async function login(user: CreateUserData) {

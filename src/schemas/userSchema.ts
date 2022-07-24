@@ -8,5 +8,5 @@ type newUserData = CreateUserData & {
 export const createUserSchema = Joi.object<newUserData>({
     email: Joi.string().required(),
     password: Joi.string().min(10).required(),
-    confirmPassword: Joi.ref('password'),
+    confirmPassword: Joi.valid(Joi.ref('password')).required(),
 });

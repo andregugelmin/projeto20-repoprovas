@@ -10,7 +10,7 @@ beforeEach(async () => {
     await prisma.$executeRaw`DELETE FROM users WHERE email = 'andre@gmail.com'`;
 });
 
-describe('User tests suite', () => {
+describe('Singup and signin', () => {
     it('given email and password, create user', async () => {
         const login = userFactory.createLogin();
         const response = await supertest(app).post(`/sign-up`).send(login);
@@ -23,7 +23,7 @@ describe('User tests suite', () => {
         expect(user.email).toBe(login.email);
     });
 
-    it('given an invalid input, returns 422', async () => {
+    it('given an invalid input, receive 422', async () => {
         const login = userFactory.createLogin();
         delete login.password;
 
@@ -60,19 +60,22 @@ describe('User tests suite', () => {
         const response = await supertest(app).post(`/sign-up`).send(login);
         expect(response.statusCode).toBe(409);
     });
+
+    it('given wrong confirPassword, fail to create user', async () => {
+        const login = userFactory.createLogin();
+        const response = await supertest(app)
+            .post(`/sign-up`)
+            .send({ ...login, confirmPassword: 'invalidconfirmpassword' });
+        expect(response.status).toBe(422);
+    });
 });
 
-describe('Test tests suite', () => {
+describe('Create Test', () => {
     it('create a test, receive 201', async () => {
-        const login = userFactory.createLogin();
-        await userFactory.createUser(login);
-
-        let response = await supertest(app).post(`/sign-in`).send(login);
-        const token = response.body.token;
+        const token = await userFactory.loginAndReceiveToken();
 
         const test = testFactory.createTest();
-        console.log(token);
-        response = await supertest(app)
+        const response = await supertest(app)
             .post('/test')
             .send(test)
             .set('Authorization', `Bearer ${token}`);
@@ -84,95 +87,143 @@ describe('Test tests suite', () => {
         expect(savedTest).not.toBeNull();
     });
     it('create a test with a invalid token, receive 401', async () => {
-        const login = userFactory.createLogin();
-        await userFactory.createUser(login);
-
-        let response = await supertest(app).post(`/sign-in`).send(login);
-        const token = response.body.token;
-
         const test = testFactory.createTest();
 
-        response = await supertest(app)
+        const response = await supertest(app)
             .post('/test')
             .send(test)
-            .set('Authorization', `Bearer 20198sadg7sd8ag2108`);
+            .set('Authorization', `Bearer invalidtoken`);
         expect(response.status).toBe(401);
     });
 
     it('create a test with a invalid name, receive 422', async () => {
-        const login = userFactory.createLogin();
-        await userFactory.createUser(login);
-
-        let response = await supertest(app).post(`/sign-in`).send(login);
-        const token = response.body.token;
+        const token = await userFactory.loginAndReceiveToken();
 
         const test = testFactory.createTest();
 
-        response = await supertest(app)
+        const response = await supertest(app)
             .post('/test')
             .send({ ...test, name: '' })
             .set('Authorization', `Bearer ${token}`);
         expect(response.status).toBe(422);
     });
     it('create a test with a invalid url, receive 422', async () => {
-        const login = userFactory.createLogin();
-        await userFactory.createUser(login);
-
-        let response = await supertest(app).post(`/sign-in`).send(login);
-        const token = response.body.token;
+        const token = await userFactory.loginAndReceiveToken();
 
         const test = testFactory.createTest();
 
-        response = await supertest(app)
+        const response = await supertest(app)
             .post('/test')
             .send({ ...test, pdfUrl: 'notaurl' })
             .set('Authorization', `Bearer ${token}`);
         expect(response.status).toBe(422);
     });
     it('create a test with a teacher that is not in database, receive 404', async () => {
-        const login = userFactory.createLogin();
-        await userFactory.createUser(login);
-
-        let response = await supertest(app).post(`/sign-in`).send(login);
-        const token = response.body.token;
+        const token = await userFactory.loginAndReceiveToken();
 
         const test = testFactory.createTest();
 
-        response = await supertest(app)
+        const response = await supertest(app)
             .post('/test')
             .send({ ...test, teacher: 'invalidteacher' })
             .set('Authorization', `Bearer ${token}`);
         expect(response.status).toBe(404);
     });
     it('create a test with a category that is not in database, receive 404', async () => {
-        const login = userFactory.createLogin();
-        await userFactory.createUser(login);
-
-        let response = await supertest(app).post(`/sign-in`).send(login);
-        const token = response.body.token;
+        const token = await userFactory.loginAndReceiveToken();
 
         const test = testFactory.createTest();
 
-        response = await supertest(app)
+        const response = await supertest(app)
             .post('/test')
             .send({ ...test, category: 'invalidcategory' })
             .set('Authorization', `Bearer ${token}`);
         expect(response.status).toBe(404);
     });
     it('create a test with a discipline that is not in database, receive 404', async () => {
-        const login = userFactory.createLogin();
-        await userFactory.createUser(login);
-
-        let response = await supertest(app).post(`/sign-in`).send(login);
-        const token = response.body.token;
+        const token = await userFactory.loginAndReceiveToken();
 
         const test = testFactory.createTest();
 
-        response = await supertest(app)
+        const response = await supertest(app)
             .post('/test')
             .send({ ...test, discipline: 'invaliddiscipline' })
             .set('Authorization', `Bearer ${token}`);
         expect(response.status).toBe(404);
+    });
+
+    it('create a test with a discipline that is not correlated with teacher, receive 404', async () => {
+        const token = await userFactory.loginAndReceiveToken();
+
+        const test = testFactory.createTest();
+
+        const response = await supertest(app)
+            .post('/test')
+            .send({ ...test, discipline: 'Humildade' })
+            .set('Authorization', `Bearer ${token}`);
+        expect(response.status).toBe(404);
+    });
+});
+
+describe('Get Test by discipline', () => {
+    it('given right token get tests by discipline, receive 200', async () => {
+        const token = await userFactory.loginAndReceiveToken();
+        const test = testFactory.createTest();
+
+        let response = await supertest(app)
+            .post('/tests')
+            .send(test)
+            .set('Authorization', `Bearer ${token}`);
+
+        response = await supertest(app)
+            .get('/tests/disciplines')
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(response.body).not.toBeNull();
+        expect(response.status).toEqual(200);
+    });
+
+    it('get tests by discipline with no token, receive 401', async () => {
+        const response = await supertest(app).get('/tests/disciplines');
+        expect(response.status).toEqual(401);
+    });
+
+    it('get tests by discipline with a invalid token, receive status 401', async () => {
+        const response = await supertest(app)
+            .get('/tests/disciplines')
+            .set('Authorization', `Bearer invalidtoken`);
+        expect(response.status).toEqual(401);
+    });
+});
+
+describe('Get Test by teacher', () => {
+    it('given right token get tests by teacher, receive 200', async () => {
+        const token = await userFactory.loginAndReceiveToken();
+        const test = testFactory.createTest();
+
+        let response = await supertest(app)
+            .post('/tests')
+            .send(test)
+            .set('Authorization', `Bearer ${token}`);
+
+        response = await supertest(app)
+            .get('/tests/teachers')
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(response.body).not.toBeNull();
+        expect(response.status).toEqual(200);
+    });
+
+    it('get tests by discipline with no token, receive 401', async () => {
+        const response = await supertest(app).get('/tests/teachers');
+        expect(response.status).toEqual(401);
+    });
+
+    it('get tests by discipline with a invalid token, receive status 401', async () => {
+        const response = await supertest(app)
+            .get('/tests/teachers')
+            .set('Authorization', `Bearer invalidtoken`);
+        expect(response.status).toEqual(401);
     });
 });
 

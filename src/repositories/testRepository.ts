@@ -29,7 +29,7 @@ export async function findByName(name: string) {
 }
 
 export async function findByTerms() {
-    const terms = await prisma.term.findMany({
+    return await prisma.term.findMany({
         select: {
             number: true,
             Discipline: {
@@ -51,32 +51,25 @@ export async function findByTerms() {
             },
         },
     });
-    return terms;
 }
 
-export async function findByCategory() {
-    const terms = await prisma.category.findMany({
+export async function findByTeachers() {
+    return await prisma.teacher.findMany({
         select: {
             name: true,
             Test: {
                 select: {
                     name: true,
                     pdfUrl: true,
-                    teacherDiscipline: {
+                    Discipline: {
                         select: {
-                            teacher: {
-                                select: {
-                                    name: true,
-                                },
-                            },
+                            name: true,
                         },
                     },
                 },
             },
         },
     });
-
-    return terms;
 }
 
 export default {
@@ -84,5 +77,5 @@ export default {
     findById,
     findByName,
     findByTerms,
-    findByCategory,
+    findByTeachers,
 };

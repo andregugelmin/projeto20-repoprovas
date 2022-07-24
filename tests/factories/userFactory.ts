@@ -1,12 +1,16 @@
 import bcrypt from 'bcrypt';
 import { faker } from '@faker-js/faker';
+import supertest from 'supertest';
 
+import app from '../../src/app.js';
 import { prisma } from '../../src/config/database.js';
 
 function createLogin(email = 'andre@gmail.com', passwordLength = 10) {
+    const password = faker.internet.password(passwordLength);
     return {
         email,
-        password: faker.internet.password(passwordLength),
+        password: password,
+        confirmPassword: password,
     };
 }
 
@@ -26,9 +30,19 @@ async function createUser(login: Login) {
     return { ...user, plainPassword: login.password };
 }
 
+async function loginAndReceiveToken() {
+    const login = createLogin();
+    await createUser(login);
+
+    let response = await supertest(app).post(`/sign-in`).send(login);
+    const token = response.body.token;
+    return token;
+}
+
 const userFactory = {
     createLogin,
     createUser,
+    loginAndReceiveToken,
 };
 
 export default userFactory;

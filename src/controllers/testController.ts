@@ -10,7 +10,13 @@ export async function createTest(req: Request, res: Response) {
 }
 
 export async function getTestByTerms(req: Request, res: Response) {
-    const terms = await testService.getTestByTerms();
+    const result = await testService.getTestByTerms();
 
-    return res.send({ terms }).status(200);
+    return res.send({ terms: result }).status(200);
+}
+
+export async function getTestByTeachers(req: Request, res: Response) {
+    const result = await testService.getTestByTeachers();
+
+    return res.send({ terms: result }).status(200);
 }
