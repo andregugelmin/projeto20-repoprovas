@@ -5,7 +5,7 @@ import disciplineService from '../services/disciplineService.js';
 import teacherService from '../services/teacherService.js';
 
 import { notFoundError } from '../utils/errorUtils.js';
-import teacherDisciplineService from './teacherDisciplineService.js';
+import teacherDisciplineService from './teacherDisciplneService.js';
 
 async function createTest(
     name: string,
@@ -14,34 +14,94 @@ async function createTest(
     categoryName: string,
     disciplineName: string
 ) {
+    const data = await findCreateTestData(
+        teacherName,
+        categoryName,
+        disciplineName
+    );
+    const createTestData: CreateTestData = { ...data, name, pdfUrl };
+    await testRepository.insert(createTestData);
+}
+
+async function findCreateTestData(
+    teacherName: string,
+    categoryName: string,
+    disciplineName: string
+) {
     const teacher = await teacherService.getTeacherbyName(teacherName);
-    if (!teacher) throw notFoundError('Teacher not found');
-    console.log(teacher);
+
     const category = await categoryService.getCategorybyName(categoryName);
-    if (!category) throw notFoundError('Category not found');
-    console.log(category);
 
     const discipline = await disciplineService.getDisciplinebyName(
         disciplineName
     );
-    if (!discipline) throw notFoundError('Discipline not found');
-    console.log(discipline);
 
     const teacherDiscipline =
-        await teacherDisciplineService.getTeacherDiscipline(
+        await teacherDisciplineService.getTeacherDisciplineService(
             teacher.id,
             discipline.id
         );
-    console.log(teacherDiscipline);
-    const createTestData: CreateTestData = {
-        name,
-        pdfUrl,
+
+    const data = {
         categoryId: category.id,
-        teacherDisciplineId: teacherDiscipline.id,
+        teacherId: teacher.id,
+        disciplineId: discipline.id,
     };
-    await testRepository.insert(createTestData);
+    return data;
 }
 
-const testService = { createTest };
+export async function getTestByTerms() {
+    const result = await testRepository.findByTerms();
+
+    const terms = result.map((term) => {
+        return {
+            number: term.number,
+            disciplines: term.Discipline.map((discipline) => {
+                return separateTestsByCategory(discipline);
+            }),
+        };
+    });
+    return terms;
+}
+
+function separateTestsByCategory(discipline) {
+    let categories = [];
+    let categoriesObj = {};
+    let categoriesArr = [];
+
+    discipline.Test.forEach((test) => {
+        if (!categories.includes(test.category.name))
+            categories.push(test.category.name);
+    });
+
+    categories.forEach((category) => {
+        const testFiltered = discipline.Test.filter((test) => {
+            return test.category.name === category;
+        });
+        const testMaped = testFiltered.map((test) => {
+            return {
+                name: test.name,
+                pdfUrl: test.pdfUrl,
+                teacher: test.Teacher.name,
+            };
+        });
+
+        categoriesObj = {
+            name: category,
+            tests: testMaped,
+        };
+        categoriesArr.push(categoriesObj);
+    });
+
+    if (categoriesArr.length === 0) {
+        return {
+            name: discipline.name,
+            categories: 'Não tem prova pra nenhuma categoria nessa disciplina',
+        };
+    }
+    return { name: discipline.name, categories: categoriesArr };
+}
+
+const testService = { createTest, getTestByTerms };
 
 export default testService;

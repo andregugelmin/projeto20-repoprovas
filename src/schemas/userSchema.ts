@@ -1,7 +1,12 @@
 import Joi from 'joi';
 import { CreateUserData } from '../interfaces/createData.js';
 
-export const userSchema = Joi.object<CreateUserData>({
+type newUserData = CreateUserData & {
+    confirmPassword: string;
+};
+
+export const createUserSchema = Joi.object<newUserData>({
     email: Joi.string().required(),
     password: Joi.string().min(10).required(),
+    confirmPassword: Joi.ref('password'),
 });
