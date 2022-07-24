@@ -28,6 +28,7 @@ RepoProvas é um sistema de compartilhamento de provas entre estudantes onde qua
 - Node.js
 - TypeScript
 - PostgreSQL com Prisma
+- Jest e supertest
 
 ***
 
