@@ -45,7 +45,6 @@ describe('Singup and signin', () => {
 
     it('given invalid password, receive 401', async () => {
         const login = userFactory.createLogin();
-        const user = userFactory.createUser(login);
 
         const response = await supertest(app)
             .post(`/sign-in`)

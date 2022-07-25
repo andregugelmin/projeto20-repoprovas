@@ -20,21 +20,22 @@ interface Login {
 }
 
 async function createUser(login: Login) {
+    const passwordEncrypted = bcrypt.hashSync(login.password, 12);
     const user = await prisma.user.create({
         data: {
             email: login.email,
-            password: bcrypt.hashSync(login.password, 12),
+            password: passwordEncrypted,
         },
     });
 
-    return { ...user, plainPassword: login.password };
+    return { ...user, password: login.password };
 }
 
 async function loginAndReceiveToken() {
     const login = createLogin();
-    await createUser(login);
+    const user = await createUser(login);
 
-    let response = await supertest(app).post(`/sign-in`).send(login);
+    let response = await supertest(app).post(`/sign-in`).send(user);
     const token = response.body.token;
     return token;
 }
