@@ -22,7 +22,7 @@ RepoProvas é um sistema de compartilhamento de provas entre estudantes onde qua
 
 ***
 
-## :computer:	 Tecnologias e Conceitos
+## :computer: Tecnologias e Conceitos
 
 - REST APIs
 - JWTs & refresh tokens
@@ -31,6 +31,47 @@ RepoProvas é um sistema de compartilhamento de provas entre estudantes onde qua
 - PostgreSQL com Prisma
 - Jest e supertest
 
+***
+
+### :warning: É necessário criar um banco de dados PostgreSQL e ter instalado o PrismaORM
+
+Para gerar a migração do prisma
+```bash
+npx prisma migrate dev
+```
+Para gerar os modelos/interfaces/tipos no @prisma/client
+```bash
+npx prisma generate
+```
+Para gerar o seed
+```bash
+npx prisma db seed
+```
+
+***
+
+## 🚧: Como rodar localmente
+
+1. Clone este repositório
+2. Instale as dependências
+```bash
+npm i
+```
+3. Crie um arquivo .env e o configure com
+```bash
+DATABASE_URL = 'url do banco de dados'
+PORT = 5000
+MODE = DEV
+JWT_SECRET = 'sua senha jwt'
+```
+4. Rode com
+```bash
+npm start ou npm run dev 
+```
+5. Para rodar testes é necessário configurar um arquivo .env.test com as mesmas variáveis do .env e depois rodar
+```bash
+npm run test 
+```
 ***
 
 ## :rocket: Rotas
