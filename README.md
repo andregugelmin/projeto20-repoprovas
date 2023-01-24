@@ -1,4 +1,4 @@
-# <p align = "center"> repoprovas-back </p>
+# <p align = "center"> repoprovas-backend </p>
 
 <p align="center">
    <img src="https://notion-emojis.s3-us-west-2.amazonaws.com/prod/svg-twitter/1f5c3-fe0f.svg" width="110"/>
